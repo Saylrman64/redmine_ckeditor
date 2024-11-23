@@ -1,0 +1,289 @@
+= UPDATE
+I'm no longer interested in maintaining this gem since I no longer use it myself. 
+If anyone reading this would like to help out, please get in touch!
+- @bastiaanterhorst
+
+
+== Rich
+
+{<img src="https://github.com/bastiaanterhorst/rich/raw/master/app/assets/images/rich/rich.png" />}[https://github.com/bastiaanterhorst/rich/] Rich is an opinionated implementation of CKEditor for Rails 3.2 and up. It includes a stripped down toolbar, simplified dialogs and a custom file manager. The file manager can also be used separate from CKEditor.
+
+Presently, Rich integrates with Active Admin, Rails Admin and vanilla Formtastic (versions 1 and 2). Uploaded files can be stored on the filesystem, or on S3 (via Paperclips built-in S3 support).
+
+== Goals
+
+1. Keep the CKEditor source out of your project.
+2. Sensible defaults. We don't want our users to insert tables, smilies or other frivolities that will do nothing but ruin a lovingly crafted design.
+3. Make it easy to customize these defaults.
+4. Implement a usable (and easily configurable) file manager that serves up images that fit your specific design.
+5. A good upload experience (multiple uploads, progress bars, pure html/js).
+
+It should be noted that while a major point of this project was to remove many things from CKEditor, all that stuff is still in there and can be easily re-enabled.
+
+== Dependency Status
+
+{<img src="https://gemnasium.com/bastiaanterhorst/rich.png" />}[https://gemnasium.com/bastiaanterhorst/rich/]
+
+== Quick install
+
+Rich is available as a Ruby Gem, which makes installation very easy.
+
+  # In your Gemfile (Rails >= 3.2)
+  gem 'rich'
+  # the edge (unstable) version can be had using:
+  # gem 'rich', :git => 'https://github.com/bastiaanterhorst/rich.git'
+
+  # If you want to use Paperclip
+  gem 'paperclip'
+  
+  # If you want to use CarrierWave
+  # Be sure to set config.backend = :carrierwave in config/initializers/rich.rb
+  gem 'carrierwave'
+
+After updating your bundle, run the installer.
+
+  $> rails generate rich:install
+
+The installer sets up a route, creates an initializer for configuration and adds a javascript and CSS file. It also creates a migration, so we need to migrate the database.
+
+  $> rake db:migrate
+
+As a last step, secure the file manager by setting your authentication method in <tt>/config/initializers/rich.rb</tt>. If you're using Devise with an AdminUser model (incidentally, the Active Admin defaults):
+  config.authentication_method = :authenticate_admin_user!
+
+You're good to go.
+
+== Usage
+
+=== Vanilla Formtastic
+
+To use Rich, it's javascript file must be loaded. By default, this is already setup for you because Rails loads all Javascript files through the <tt>require_tree .</tt> command in application.js. If you've removed that line, manually load rich by requiring it.
+
+  //= require rich
+
+In your formtastic form, use <tt>:as => :rich</tt> to insert Rich. Like so:
+
+  <%= semantic_form_for @post do |f| %>
+    <%= f.inputs do %>
+      <%= f.input :name %>
+      <%= f.input :title %>
+      <%= f.input :featured_image, :as => :rich_picker %>
+      <%= f.input :body, :as => :rich, :config => { :default_style => "myCrazyPaperclipStyle" } %>
+    <% end %>
+    <%= f.buttons do %>
+      <%= f.commit_button %>
+    <% end %>
+  <% end %>
+
+=== Active Admin
+
+Since Active Admin actually uses Formtastic, you can use it with Rich out of the box. In your model configuration file, set up your form like this. Make sure you add <tt>//= require rich</tt> to your <tt>app/assets/javascripts/active_admin.js</tt>.
+
+  form do |f|
+    f.inputs "Basic info" do
+      f.input :title
+      f.input :featured_image, :as => :rich_picker, :config => { :style => 'width: 400px !important;' }
+      f.input :body, :as => :rich, :config => { :width => '76%', :height => '400px' }
+    end
+    f.buttons
+  end
+
+=== Rails Admin
+
+Since 1.4.7, it is the user's responsibility to create assets/javascripts/rails_admin/custom/ui.js and include rich
+
+  //= require rich/base
+
+To use Rich in your RA forms, use the following in your initializer:
+
+  config.model Post do
+    edit do
+      field :title
+      field :body, :rich_editor do
+        config({
+          :insert_many => true
+        })
+      end
+    end
+  end
+
+To use the image picker on a string field, do this:
+
+  field :title, :rich_picker do
+    config({
+      :allowed_styles => [:original],
+      :view_mode => "list"
+    })
+  end
+
+== Screenshots
+
+This is the editor with default settings (shown here in Rails Admin).
+{<img src="https://github.com/bastiaanterhorst/rich/raw/master/screenshots/rich-editor-default.png" />}[https://github.com/bastiaanterhorst/rich/]
+
+This is the file picker (Rich without CKEditor, again in Rails Admin).
+{<img src="https://github.com/bastiaanterhorst/rich/raw/master/screenshots/rich-picker.png" />}[https://github.com/bastiaanterhorst/rich/]
+
+This is the file manager.
+{<img src="https://github.com/bastiaanterhorst/rich/raw/master/screenshots/rich-filemanager.png" />}[https://github.com/bastiaanterhorst/rich/]
+
+== Rich in production mode
+
+Rich works just fine in production mode. To accomodate the structure of the CKEditor source, Rich extends the <tt>assets:precompile</tt> task to make sure the full CKEditor source tree is copied to your assets folder. So the following works as you would expect:
+
+  rake assets:precompile
+
+Rich will also clean up these CKEditor files when you clean your assets. Like this:
+
+  rake assets:clean
+
+Although generally not necessary, the underlying Rich tasks can be invoked directly.
+
+  rake rich:assetize_ckeditor
+  rake rich:clean_ckeditor
+
+== Configuration and overrides
+
+Take a look at the generated <tt>rich.rb</tt> initializer and – if you want to dig deeper – the Rich sourcecode. The initializer guides you through the most important settings and configuration options.
+
+=== Localization
+
+Localization should be automatic. Rich uses the currently set locale (<tt>I18n.locale</tt>) for it's editor and file browser.
+
+=== CKEditor configuration
+
+Rich attempts to provide you with a sensible set of buttons and capabilities. But of course, you might disagree. To that end, you can configure CKEditor through the <tt>config</tt> directive, either globally through the initializer, or per editor instance as an option.
+
+Rich also includes a few settings that manipulate CKEditor settings, but are a bit easier to use. For example, you can set <tt>:allow_embeds</tt> to <tt>true</tt> to load a media embed plugin (think Youtube, Vimeo, etc.)
+
+=== Editor styles
+
+When you run the generator a css file is created for you in <tt>app/assets/stylesheets/rich/editor.css</tt>. Use this stylesheet to define the contents of the Styles drop down in CKEditor.
+
+=== Image configuration & (re)processing
+
+The styles you define in the initializer are passed to Paperclip directly, so the syntax is identical. See https://github.com/thoughtbot/paperclip/wiki/Thumbnail-Generation for more information. You can also set additional processing options using <tt>convert_options</tt>. See your Rich initializer for more information.
+
+When you change styles after uploading files, you will need to re-process those old files. To accomplish this, run the following command (avoid the standard Paperclip task!).
+
+  rake rich:refresh_assets
+
+=== Using the file manager without CKEditor
+
+Besides from within the editor, the file manager can also be used on it's own. See the <tt>rich_picker</tt> examples above.
+
+When the field you connect the picker to defines a relation (i.e. it ends in <tt>_id</tt>), the picker will return a reference to Rich::RichFile object. If the field you connect the picker does not refine a relation but is instead a string, the picker will return a URL to the file chosen in the picker.
+
+In the picker's configuration (or globally in your initializer), you can optionally pass the following:
+
+    :hidden_input => true # hide the textfield that is populated with the file ID or URL. Handy when creating relations (since the ID doesn't tell you much).
+    :preview_size => '100px' # specify the bounding box of the image preview
+    :placeholder_image => image_path('placeholder.png') # show a placeholder image that will be replaced when an asset has been selected
+
+You might use this in a relation like this in ActiveAdmin:
+
+  form do |f|
+    f.inputs do
+      f.input :title
+    end
+    f.has_many :assets do |asset_form|
+      asset_form.input :rich_file_id, :as => :rich_picker, :config => {:style => 'width: 400px !important;', :hidden_input => true, :placeholder_image => image_path('placeholder.png'), :preview_size => '200px'}
+    end
+    f.buttons
+  end
+
+=== Non-image uploads
+
+To enable uploads of non-image files, set the following in your Rich initializer:
+
+  # enable document uploads. default is false.
+  config.allow_document_uploads = true
+  # restrict the type of files that can be uploaded. defaults to :all for no restrictions.
+  config.allowed_document_types = ['application/pdf']
+
+This will enable a new button on your CKEditor toolbar where you can upload regular files. Keep in mind that even if an image is uploaded through this method, it will not go through any processing you might have set up for your images.
+
+Non-image uploads also work from within the file picker when you pass in the <tt>:type => 'file'</tt> option. A Rails Admin example:
+
+  field :title, :rich_picker do
+    config({
+      :type => 'file',
+      :allowed_styles => [:original] #only original makes sense for non-images
+    })
+  end
+
+=== Media embedding (Youtube, Vimeo, etc.)
+
+Set <tt>:allow_embeds</tt> to <tt>true</tt> to enable an extra button on the CKEditor toolbar that enables you to insert embed code. This works by virtue of the MediaEmbed plugin for CKEditor. It's not pretty, but it works.
+
+=== Scoping (filtering in the file manager)
+
+It is possible to limit the files available in the file manager to a more relevant subset. This subset can either be comprised of collection of your choosing, or be tied to the current object you are editing (this works by associating your objects type and its <tt>id</tt> with any uploaded files).
+
+To scope the file manager to a collection of your choosing, pass the collection name into the <tt>:scoped</tt> configuration option. This collection name is just a string; pick anything you like. In Rails Admin:
+
+  field :cover_images, :rich_editor do
+    config({
+      :scoped => "book covers"
+    })
+  end
+
+To scope the filemanager to a specific object, simply pass in <tt>true</tt>. Again for Rails Admin:
+
+  field :body, :rich_editor do
+    config({
+      :scoped => true
+    })
+  end
+
+In the latter example (scoping to an object), it is up to you to determine if scoping is possible. For example, a new object has no id yet, so there is nothing to scope to (yet). You could hide Rich in that case, until the object has been saved. If you do enable Rich but there is no id to scope to, Rich will disable scoping until an id has been set. This will effectively hide any files previously uploaded (before the save), which is most likely not what you want. So think twice about using this option, and implement it correctly when you do.
+
+Also note that none of this is secure. At all. It is purely meant as a convenience to save you from wading through tons of irrelevant files. If need to hide files from prying eyes, you need something else.
+
+=== Uploading to S3
+
+Paperclip (which Rich uses to handle uploads) supports S3 out of the box. Just add the following to your environment:
+
+  Paperclip::Attachment.default_options.merge!(
+    :storage => :s3,
+    :bucket => ENV['S3_BUCKET'],
+    :url => "/system/:class/:attachment/:id/:style/:filename",
+    :s3_credentials => {
+      :access_key_id => ENV['S3_ACCESS_KEY_ID'],
+      :secret_access_key => ENV['S3_SECRET_ACCESS_KEY']
+    }
+  )
+
+== Planned features & ideas
+
+* drag & drop uploading
+* finding/filtering assets
+* live image cropping
+* live image rotation
+
+== Inspiration
+
+* Igor Galeta's ckeditor gem - https://github.com/galetahub/ckeditor
+* Francesc Esplugas' Ckeditor - https://github.com/fesplugas/rails-ckeditor
+* Gregg Bell's Active Admin - https://github.com/gregbell/active_admin
+
+== Tools used
+
+* Ckeditor - http://ckeditor.com/
+* Valum's FileUploader - https://github.com/valums/file-uploader
+* Rack Raw Upload - https://github.com/newbamboo/rack-raw-upload
+* Paperclip - https://github.com/thoughtbot/paperclip
+* Silk icons - http://www.famfamfam.com/lab/icons/silk/
+* Iconic icons - http://somerandomdude.com/work/iconic/
+* Kaminari - https://github.com/amatsuda/kaminari
+
+== Contributing
+
+Your contributions (small and large) are very welcome! Please fork the project, make your changes and send me a pull request. If you are considering adding new functionality, or if you found a bug, please open an issue on Github first.
+
+== Copyright
+
+Rich, the affluent editor. By Bastiaan Terhorst and the Contributors[https://github.com/bastiaanterhorst/rich/graphs/contributors].
+Sponsored by Perceptor[http://perceptor.nl].
+
+This project is licenced under the MIT License. See MIT-LICENSE for details.

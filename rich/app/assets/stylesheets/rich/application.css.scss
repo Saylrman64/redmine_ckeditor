@@ -1,0 +1,365 @@
+//= depend_on_asset "rich/loading.png"
+//= depend_on_asset "rich/insert-many.png"
+//= depend_on_asset "rich/insert-one.png"
+//= depend_on_asset "rich/view-grid.png"
+//= depend_on_asset "rich/view-list.png"
+//= depend_on_asset "rich/plus.png"
+//= depend_on_asset "rich/plus-red.png"
+//= depend_on_asset "rich/x-red.png"
+//= depend_on_asset "rich/menu-dash.png"
+/*
+ * This is a manifest file that'll automatically include all the stylesheets available in this directory
+ * and any sub-directories. You're free to add application-wide styles to this file and they'll appear at
+ * the top of the compiled file, but it's generally better to create a new file per style scope.
+ *= require_self
+ *= require_tree ./mixins
+*/
+
+
+// main vars
+$activeText: #3bbfce;
+$normalText: #3bbfce;
+$dimmedText: #3bbfce;
+
+$subtle: #f3f3f3;
+$light: #888888;
+$dark: #686868;
+
+
+$imageSize: 100px;
+$margin: 20px;
+$headerHeight: 46px;
+$verticalCenterOffset: 5px;
+
+$fontSizeSmall: 10px;
+$fontSizeNormal: 12px;
+$fontSizeLarge: 16px;
+
+
+// Mixins
+@mixin rounded($radius: 4px) {
+  -webkit-border-radius: $radius;
+  -moz-border-radius: $radius;
+  border-radius: $radius;
+}
+
+@mixin inset-box-shadow($x: 2px, $y: 2px, $blur: 4px, $color: blue) {
+	box-shadow: inset $x $y $blur $color;
+	-moz-box-shadow: inset $x $y $blur $color;
+	-webkit-box-shadow: inset $x $y $blur $color;
+}
+
+@mixin box-shadow($x: 2px, $y: 2px, $blur: 4px, $color: blue) {
+	box-shadow: $x $y $blur $color;
+	-moz-box-shadow: set $x $y $blur $color;
+	-webkit-box-shadow: $x $y $blur $color;
+}
+
+@-webkit-keyframes spinner {
+  from {-webkit-transform:rotate(0deg);}
+  to {-webkit-transform:rotate(360deg);}
+}
+
+// the meat
+*, html, body {
+	font-family: helvetica, arial, sans-serif;
+	-webkit-font-smoothing: antialiased;
+
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-o-user-select: none;
+	user-select: none;
+}
+
+#legacy-form {
+	display: none;
+}
+
+header {
+	position: fixed;
+	z-index: 999;
+	height: $headerHeight;
+	width: 100%;
+
+	background: $subtle;
+	border-bottom: 1px solid white;
+
+	@include box-shadow(0, 0, 4px, rgba(0,0,0,0.5))
+}
+
+#loading {
+	background: image-url('rich/loading.png') no-repeat center;
+	width: 16px;
+	height: $headerHeight;
+	position: absolute;
+	margin-left: 20px;
+}
+
+#insert-toggle, #view-toggle {
+  float: right;
+  height: $headerHeight;
+  overflow: hidden;
+  margin: 0 $margin/2 0 0;
+}
+
+#view-toggle {
+  margin: 0 $margin 0 0;
+}
+
+#insert-many, #insert-one, #view-list, #view-grid {
+  display: block;
+  width: 16px;
+  height: $headerHeight;
+  text-indent: -9999em;
+  background: no-repeat center;
+}
+
+#insert-many {
+  background-image: image-url('rich/insert-many.png');
+}
+
+#insert-one {
+  background-image: image-url('rich/insert-one.png');
+}
+
+#view-grid {
+  background-image: image-url('rich/view-grid.png');
+}
+
+#view-list {
+  background-image: image-url('rich/view-list.png');
+}
+
+// Default thumbnail view
+#items {
+	list-style: none;
+	margin: 0 0 0 $margin;
+	padding: 0;
+	padding-top: $headerHeight + $margin + 1;
+
+	li {
+		width: $imageSize;
+		height: $imageSize + $margin;
+		margin-right: $margin;
+		float: left;
+
+		* {
+				transition: opacity 85ms ease-in, box-shadow 85ms ease-in, color 85ms ease-in;
+				-moz-transition: opacity 85ms ease-in, box-shadow 85ms ease-in, color 85ms ease-in;
+				-ms-transition: opacity 85ms ease-in, box-shadow 85ms ease-in, color 85ms ease-in;
+				-webkit-transition: opacity 85ms ease-in, box-shadow 85ms ease-in, color 85ms ease-in;
+		}
+
+		.placeholder {
+			height: $imageSize - 2;
+			width: $imageSize - 2;
+			border: 1px dotted $light;
+			@include rounded;
+			line-height: $imageSize - $verticalCenterOffset;
+			text-align: center;
+
+			font-size: $fontSizeLarge;
+			font-weight: bold;
+			color: $light;
+		}
+
+		img {
+			@include rounded;
+			@include box-shadow(0, 0, 4px, lighten($dark, 40%));
+		}
+
+		img:hover {
+			@include box-shadow(0, 0, 4px, $light);
+		}
+
+		img:active {
+			@include box-shadow(0, 0, 4px, black);
+		}
+
+		.new {
+			@include box-shadow(0, 0, 4px, rgb(58,194,207))
+		}
+
+		.spinner {
+			opacity: 0.3;
+			margin-left: ($imageSize - 2)/2 - 32/2;
+			margin-top: 31px;
+			width: 32px;
+			height: 32px;
+			background: image-url('rich/plus.png') no-repeat top center;
+		}
+
+		#upload .spinner {
+			opacity: 1;
+		}
+
+		.progress .progress-bar {
+			background: $subtle;
+			height: $imageSize - 2;
+			float: left;
+		}
+
+		.progress .spinning {
+		  -webkit-animation-name: spinner;
+		  -webkit-animation-duration:0.75s;
+		  -webkit-animation-iteration-count:infinite;
+		  -webkit-animation-timing-function:linear;
+		}
+
+		.progress .spinner.error {
+			opacity: 1;
+			background-image: image-url('rich/plus-red.png');
+			-webkit-transform: rotate(45deg);
+		}
+
+		p {
+			font-size: 10px;
+			margin: 0;
+			line-height: $margin - 3;
+			height: $margin;
+			overflow:hidden;
+			text-overflow: ellipsis;
+			color: $subtle;
+			width: 80px;
+		}
+
+		&:hover p {
+			color: $light;
+		}
+
+		.delete {
+			position: absolute;
+			text-indent: -9999px;
+			margin-left: 80px;
+			margin-top: -$margin;
+			width:$margin;
+			height: $margin;
+			background: image-url('rich/x-red.png') no-repeat right ($margin / 2 - 5);
+			opacity: 0.1;
+		}
+
+		&:hover .delete {
+			opacity: 0.5;
+		}
+
+		&:hover .delete:hover {
+			opacity: 1;
+		}
+
+	}
+
+	#uploadBlock:hover .placeholder .spinner {
+		background-position: 0 -32px;
+	}
+
+}
+
+// Condensed list view
+#items.list {
+
+  li {
+    width: auto;
+    height: 32px;
+    float: none;
+    margin-bottom: 16px;
+
+    img, .placeholder {
+      height: 32px;
+      width: 32px;
+      float: left;
+      margin-right: 16px;
+      line-height: 32px;
+      border: none;
+    }
+
+    .spinner {
+      margin: 0;
+    }
+
+    .progress .progress-bar {
+      background: $light;
+      height: 4px;
+      float: left;
+      @include rounded;
+      margin-top: 28px;
+    }
+
+
+    p {
+      color: $dark;
+      font-size: 14px;
+      width: auto;
+      height: 32px;
+      line-height: 32px;
+      float: left;
+      cursor: default;
+    }
+
+    .delete {
+        position: relative;
+        float: left;
+        text-indent: -9999px;
+        margin: 8px 0 0 0;
+        width:$margin;
+        height: $margin;
+        background: image-url('rich/x-red.png') no-repeat right ($margin / 2 - 5);
+        opacity: 0.1;
+    }
+
+    #uploadBlock:hover .placeholder .spinner {
+      background-position: 0 0px;
+    }
+
+  }
+
+}
+
+.clickable:hover {
+	cursor: pointer;
+}
+
+// scope selector
+ul.scopes {
+
+	list-style: none;
+	margin: 0 15px 0 ($margin/4*3);
+	padding: 0 10px 0 0;
+  background: image-url('rich/menu-dash.png') no-repeat right 23px;
+	float: right;
+
+	li {
+		float: left;
+		height: $margin;
+		line-height: $margin;
+		margin-right: $margin/4;
+		margin-top: ($headerHeight - $margin) / 2 + 1;
+		font-weight: bold;
+		font-size: 12px;
+	}
+
+	li.label {
+		color: $light;
+		padding-right: $margin/4;
+	}
+
+	li.scope {
+		color: $dark;
+		@include rounded;
+		padding: 0 $margin / 2;
+	}
+
+	li.scope:hover {
+		cursor: pointer;
+		background: darken($subtle, 10%);
+		text-shadow: 0px 1px 0 white;
+	}
+
+	li.scope.selected {
+		@include inset-box-shadow(0, 1px, 1px, $dark);
+		text-shadow: 0px 1px 0 rgba(0, 0, 0, 0.25);
+		color: $subtle;
+		background: $light;
+	}
+
+}

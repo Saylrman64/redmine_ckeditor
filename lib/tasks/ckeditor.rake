@@ -15,7 +15,7 @@ namespace :redmine_ckeditor do
       ckeditor = RedmineCkeditor.root.join("assets/ckeditor")
       rm_rf ckeditor
       cp_r RedmineCkeditor.root.join("app/assets/javascripts/ckeditor-releases"), ckeditor
-      rm ckeditor.join(".git")
+      # rm ckeditor.join(".git")
     end
   end
 

@@ -1,0 +1,17 @@
+<%= semantic_form_for @post do |f| %>
+   <%= f.inputs do %>
+     <%= f.input :name %>
+     <%= # f.input :title, :as => :rich_asset 
+%>
+
+    <%= f.input :content, :as => :rich_picker, :config => { :default_style => "thumb" } %>
+    <%= f.input :image_id, :as => :rich_picker, :config => { :default_style => "thumb" } %>
+   <% end %>
+
+
+  <%= f.actions do %>
+    <%= f.action :submit, :as => :button %>
+    <%= f.action :cancel, :as => :link %>
+  <% end %>
+
+ <% end %>

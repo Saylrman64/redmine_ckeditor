@@ -24,10 +24,17 @@ module RedmineCkeditor::WikiFormatting
       }
 
       auto_link!(text)
-      text = ActionView::Base.white_list_sanitizer.sanitize(text,
-        :tags => RedmineCkeditor.allowed_tags,
-        :attributes => RedmineCkeditor.allowed_attributes
-      )
+      text = if ActionView::Base.respond_to?('safe_list_sanitizer')
+        ActionView::Base.safe_list_sanitizer.sanitize(text,
+          :tags => RedmineCkeditor.allowed_tags,
+          :attributes => RedmineCkeditor.allowed_attributes
+        )
+      else
+        ActionView::Base.white_list_sanitizer.sanitize(text,
+          :tags => RedmineCkeditor.allowed_tags,
+          :attributes => RedmineCkeditor.allowed_attributes
+        )
+      end
 
       preserved.each.with_index(1) {|content, i|
         text.gsub!("____preserved_#{i}____", content)

@@ -1,5 +1,10 @@
 require 'redmine'
-require 'redmine_ckeditor'
+
+base_path = File.dirname(__FILE__)
+if Rails.configuration.respond_to?(:autoloader) && Rails.configuration.autoloader == :zeitwerk
+  Rails.autoloaders.each { |loader| loader.ignore("#{base_path}/lib") }
+end
+require "#{base_path}/lib/redmine_ckeditor"
 
 ActiveSupport::Reloader.to_prepare do
   RedmineCkeditor.apply_patch
@@ -7,11 +12,11 @@ end
 
 Redmine::Plugin.register :redmine_ckeditor do
   name 'Redmine CKEditor plugin'
-  author 'Akihiro Ono'
+  author 'RedmineX'
   description 'This is a CKEditor plugin for Redmine'
-  version '1.2.3'
+  version '1.2.4'
   requires_redmine :version_or_higher => '4.0.0'
-  url 'http://github.com/a-ono/redmine_ckeditor'
+  url 'https://www.redmine-x.com'
 
   settings(:partial => 'settings/ckeditor')
 
